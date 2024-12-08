@@ -2,23 +2,30 @@ package routes
 
 import (
 	"backend/handlers"
+	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
-func SetupRoutes() *mux.Router {
+func SetupRoutes() http.Handler {
 	r := mux.NewRouter()
 
 	// User routes
-	r.HandleFunc("/users", handlers.CreateUser).Methods("POST")
+	r.HandleFunc("/users", handlers.LoginUser).Methods("POST")
 	r.HandleFunc("/users", handlers.GetAllUsers).Methods("GET")
 
 	// Armstrong number routes
 	r.HandleFunc("/verify", handlers.VerifyArmstrong).Methods("POST")
 	r.HandleFunc("/verify", handlers.GetVerifyPage).Methods("GET")
 
-	// r.HandleFunc("/numbers/{userId}", handlers.GetArmstrongNumbersByUser).Methods("GET")
-	// r.HandleFunc("/numbers", handlers.GetAllArmstrongNumbers).Methods("GET")
+	// Apply CORS middleware
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000"}, // Replace with your frontend's origin
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization"},
+		AllowCredentials: true,
+	}).Handler(r)
 
-	return r
+	return corsHandler
 }

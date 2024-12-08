@@ -1,7 +1,7 @@
 import './App.css';
-import CheckNumber from './components/checkArm';
+import LoginForm from './components/login';
 function App() {
-  return <CheckNumber />;
+  return <LoginForm />;
 }
 
 export default App;
