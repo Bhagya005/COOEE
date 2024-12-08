@@ -15,7 +15,10 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
         Name  string `json:"name"`
         Email string `json:"email"`
     }
-    json.NewDecoder(r.Body).Decode(&input)
+    if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+        http.Error(w, "Invalid request payload", http.StatusBadRequest)
+        return
+    }
 
     // Validate inputs
     if strings.TrimSpace(input.Name) == "" {
@@ -31,8 +34,8 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
     emailRegex := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
     matched, err := regexp.MatchString(emailRegex, input.Email)
     if err != nil || !matched {
-        w.Header().Set("Content-Type", "application/json") // Set Content-Type
-        w.WriteHeader(http.StatusBadRequest)              // Send 400 Bad Request status
+        w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(http.StatusBadRequest)
         json.NewEncoder(w).Encode(map[string]string{"error": "Invalid email format"})
         return
     }
@@ -40,14 +43,19 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
     // Check if the user already exists
     var existingUser models.User
     if err := config.DB.Where("email = ?", input.Email).First(&existingUser).Error; err == nil {
+        // Return the existing user's ID (uid)
         w.Header().Set("Content-Type", "application/json")
-        w.WriteHeader(http.StatusConflict)
-        json.NewEncoder(w).Encode(map[string]string{"error": "User already exists"})
+        w.WriteHeader(http.StatusOK)
+        json.NewEncoder(w).Encode(map[string]interface{}{
+            "message": "User already exists",
+            "uid":     existingUser.ID,
+            "name":    existingUser.Name,
+            "email":   existingUser.Email,
+        })
         return
     }
 
-
-    // Add user to the database
+    // Add new user to the database
     newUser := models.User{
         Name:      input.Name,
         Email:     input.Email,
@@ -59,6 +67,13 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    w.WriteHeader(http.StatusOK)
-    json.NewEncoder(w).Encode(newUser)
+    // Return the new user's ID (uid)
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusCreated)
+    json.NewEncoder(w).Encode(map[string]interface{}{
+        "message": "User created successfully",
+        "uid":     newUser.ID,  // Send the new user's ID
+        "name":    newUser.Name,
+        "email":   newUser.Email,
+    })
 }

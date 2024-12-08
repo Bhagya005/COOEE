@@ -1,18 +1,14 @@
 import React, { useState } from "react";
+import { useUser } from "../context/UserContext"; // Access the user context
 import thumbsUp from "../static/thumbsUp.gif";
 import thumbsDown from "../static/thumbsDown.gif";
+
 const CheckNumber = () => {
+  const { user } = useUser(); // Access user data from the context
   const [number, setNumber] = useState("");
   const [result, setResult] = useState("");
 
-  const isArmstrong = (num) => {
-    const digits = num.toString().split("").map(Number);
-    const sum = digits.reduce((acc, digit) => acc + Math.pow(digit, digits.length), 0);
-    return sum === num;
-  };
-
-  const handleCheck = () => {
-    // Check if the entered value contains anything other than digits
+  const handleCheck = async () => {
     if (!/^\d+$/.test(number)) {
       alert("Please enter a valid numeric value");
       return;
@@ -20,11 +16,52 @@ const CheckNumber = () => {
 
     const num = parseInt(number, 10);
 
-    if (isArmstrong(num)) {
-      setResult({ message: "Congrats! You have discovered an Armstrong Number", gif: thumbsUp });
-    } else {
-      setResult({ message: "Not Armstrong. Try another!", gif: thumbsDown });
+    // Check if the number is Armstrong
+    const isArmstrongNumber = isArmstrong(num);
+    const resultText = isArmstrongNumber ? "positive" : "negative";
+
+    try {
+      // Send the number, user id, and result to the backend
+      const response = await fetch("http://localhost:8080/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          uid: user.id,  // Pass the UID from context
+          number: num,
+          result: resultText,  // Send the result as positive or negative
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        // Set result based on the backend response
+        setResult({
+          message: isArmstrongNumber
+            ? `Congrats! Number ${num} is an Armstrong number.`
+            : `Number ${num} is not an Armstrong number.`,
+          gif: isArmstrongNumber ? thumbsUp : thumbsDown,
+        });
+      } else {
+        const error = await response.json();
+        alert(error.error || "An error occurred");
+        setResult({
+          message: `An error occurred while checking the number.`,
+          gif: thumbsDown,
+        });
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("An error occurred. Please try again.");
     }
+  };
+
+  const isArmstrong = (num) => {
+    const digits = num.toString().split("").map(Number);
+    const sum = digits.reduce((acc, digit) => acc + Math.pow(digit, digits.length), 0);
+    return sum === num;
   };
 
   return (
@@ -38,9 +75,7 @@ const CheckNumber = () => {
             ←
           </button>
           <div className="flex flex-col items-center">
-            <h1 className="text-2xl font-bold mb-4 text-center">
-              Let's Check a number
-            </h1>
+            <h1 className="text-2xl font-bold mb-4 text-center">Let's Check a number</h1>
             <label htmlFor="number" className="block text-sm mb-2 text-center">
               Enter a number
             </label>
@@ -63,7 +98,7 @@ const CheckNumber = () => {
       {result && (
         <div className="flex items-center pt-5 w-[20%] justify-center space-x-0">
           <img src={result.gif} alt="Result" className="w-[120px] h-[100px]" />
-          <span className="text-lg text-center font-bold text-custom-blue">{result.message}</span>
+          <span className="text-sm text-center font-bold text-custom-blue">{result.message}</span>
         </div>
       )}
     </div>

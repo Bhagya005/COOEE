@@ -5,30 +5,51 @@ import (
     "backend/models"
     "encoding/json"
     "net/http"
-    
+    "time"
 )
 
+// VerifyArmstrong checks if a number is Armstrong and adds it to the database
 func VerifyArmstrong(w http.ResponseWriter, r *http.Request) {
-    var data map[string]int
-    json.NewDecoder(r.Body).Decode(&data)
-    number := data["number"]
-
-    if isArmstrong(number) {
-        armstrong := models.ArmstrongNumber{Number: number, UserID: 1} // Example UserID
-        config.DB.Create(&armstrong)
-        w.WriteHeader(http.StatusCreated)
-        json.NewEncoder(w).Encode(armstrong)
-    } else {
-        http.Error(w, "Not an Armstrong number", http.StatusBadRequest)
+    // Decode JSON request body
+    var data struct {
+        UID    uint   `json:"uid"`
+        Number int    `json:"number"`
+        Result string `json:"result"` // Result will be either "positive" or "negative"
     }
-}
 
-func isArmstrong(num int) bool {
-    sum, temp := 0, num
-    for temp > 0 {
-        digit := temp % 10
-        sum += digit * digit * digit
-        temp /= 10
+    if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+        http.Error(w, "Invalid request payload", http.StatusBadRequest)
+        return
     }
-    return sum == num
+
+    // Validate inputs
+    if data.Number <= 0 {
+        http.Error(w, "Invalid number", http.StatusBadRequest)
+        return
+    }
+
+    // Check if the number already exists for the user
+    // var existingEntry models.ArmstrongNumber
+    // if err := config.DB.Where("user_id = ? AND number = ?", data.UID, data.Number).First(&existingEntry).Error; err == nil {
+    //     http.Error(w, "Number already checked by this user", http.StatusConflict)
+    //     return
+    // }
+
+    // Add new entry to the database
+    newEntry := models.ArmstrongNumber{
+        UserID:    data.UID,
+        Number:    data.Number,
+        Result:    data.Result, // Store the result (positive or negative)
+        CreatedAt: time.Now(),
+    }
+
+    if err := config.DB.Create(&newEntry).Error; err != nil {
+        http.Error(w, "Error saving entry", http.StatusInternalServerError)
+        return
+    }
+
+    // Send a successful response with the new entry
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusCreated)
+    json.NewEncoder(w).Encode(newEntry)
 }

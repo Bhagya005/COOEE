@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { useUser } from "../context/UserContext"; // Import useUser hook to access UserContext
 
 const LoginForm = () => {
+  const { setUserDetails } = useUser(); // Get the function to update the user context
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
 
@@ -30,8 +32,22 @@ const LoginForm = () => {
       const data = await response.json();
 
       if (response.ok) {
+        // Store user data (uid, name, email) in context
+        setUserDetails({
+          id: data.uid, // Assuming the backend returns a `uid`
+          name: data.name,
+          email: data.email,
+        }
+        );
+        
+        // Optionally store data in localStorage or sessionStorage to persist across page reloads
+        localStorage.setItem("uid", data.uid);
+        localStorage.setItem("name", data.name);
+        localStorage.setItem("email", data.email);
+
         alert("User successfully logged in!");
         console.log("Response:", data);
+        
       } else {
         alert(data.error || "Login failed");
       }
