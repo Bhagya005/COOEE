@@ -14,7 +14,7 @@ func SetupRoutes() http.Handler {
 	// User routes
 	r.HandleFunc("/users", handlers.LoginUser).Methods("POST")
 	r.HandleFunc("/users", handlers.GetAllUsers).Methods("GET")
-
+    r.HandleFunc("/getuserdet", handlers.GetUserDetails).Methods("POST")
 	// Armstrong number routes
 	r.HandleFunc("/verify", handlers.VerifyArmstrong).Methods("POST")
 	r.HandleFunc("/verify", handlers.GetVerifyPage).Methods("GET")

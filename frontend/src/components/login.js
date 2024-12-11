@@ -1,13 +1,23 @@
-import React, { useState } from "react";
-import { useUser } from "../context/UserContext"; // Import useUser hook to access UserContext
+import React, { useState, useEffect } from "react";
+import { useUser } from "../context/UserContext"; // Access the user context
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const LoginForm = () => {
-  const { setUserDetails } = useUser(); // Get the function to update the user context
+  const { setUserDetails, user } = useUser(); // Access the user context and setUserDetails function
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const navigate = useNavigate(); // Hook for navigation
+
+  useEffect(() => {
+    // Log the current user context when the component loads
+    console.log("UserContext before update:", user);
+  }, []); // Run once when the component mounts
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    console.log("Name entered:", name);
+    console.log("Email entered:", email);
 
     // Input validation
     if (!name.trim()) {
@@ -20,7 +30,6 @@ const LoginForm = () => {
     }
 
     try {
-      // Send name and email to the backend
       const response = await fetch("http://localhost:8080/users", {
         method: "POST",
         headers: {
@@ -30,29 +39,37 @@ const LoginForm = () => {
       });
 
       const data = await response.json();
+      console.log("Backend response:", data);
 
       if (response.ok) {
-        // Store user data (uid, name, email) in context
+        // Log the user context before it's updated
+        console.log("UserContext before update:", user);
+
+        // Update UserContext and localStorage with the new user_id
         setUserDetails({
-          id: data.uid, // Assuming the backend returns a `uid`
+          user_id: data.user_id, // Use the unique `user_id`
           name: data.name,
           email: data.email,
-        }
-        );
-        
-        // Optionally store data in localStorage or sessionStorage to persist across page reloads
-        localStorage.setItem("uid", data.uid);
+        });
+
+        console.log("UserContext updated:", {
+          user_id: data.user_id,
+          name: data.name,
+          email: data.email,
+        });
+
+        // Persist user details in localStorage
+        localStorage.setItem("user_id", data.user_id);
         localStorage.setItem("name", data.name);
         localStorage.setItem("email", data.email);
 
         alert("User successfully logged in!");
-        console.log("Response:", data);
-        
+        navigate("/check-armstrong"); // Navigate to the Armstrong check page
       } else {
         alert(data.error || "Login failed");
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error during login:", error);
       alert("An error occurred. Please try again later.");
     }
   };
@@ -61,9 +78,7 @@ const LoginForm = () => {
     <div className="flex items-center justify-center min-h-screen bg-custom-blue">
       <div className="md:w-2/6 md:h-2/3 bg-white p-8 rounded-lg shadow-lg">
         <form onSubmit={handleLogin}>
-          <h2 className="text-2xl font-bold mb-4 text-center text-custom-blue">
-            Welcome
-          </h2>
+          <h2 className="text-2xl font-bold mb-4 text-center text-custom-blue">Welcome</h2>
           <div className="mb-4">
             <label htmlFor="name" className="block text-sm font-bold text-custom-blue">
               Name
@@ -73,7 +88,7 @@ const LoginForm = () => {
               id="name"
               name="name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => setName(e.target.value)} // Updates `name` state
               className="mt-1 block w-full px-4 py-2 bg-gray-200 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-custom-blue focus:border-transparent"
             />
           </div>
@@ -86,7 +101,7 @@ const LoginForm = () => {
               id="email"
               name="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)} // Updates `email` state
               className="mt-1 block w-full px-4 py-2 bg-gray-200 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-custom-blue focus:border-transparent"
             />
           </div>

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useUser } from "../context/UserContext"; // Access the user context
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import thumbsUp from "../static/thumbsUp.gif";
 import thumbsDown from "../static/thumbsDown.gif";
 
@@ -7,6 +8,7 @@ const CheckNumber = () => {
   const { user } = useUser(); // Access user data from the context
   const [number, setNumber] = useState("");
   const [result, setResult] = useState("");
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const handleCheck = async () => {
     if (!/^\d+$/.test(number)) {
@@ -28,15 +30,15 @@ const CheckNumber = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          uid: user.id,  // Pass the UID from context
+          user_id: user.user_id, // Pass the UID from context
           number: num,
-          result: resultText,  // Send the result as positive or negative
+          result: resultText, // Send the result as positive or negative
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
-
+        console.log("Backend Response:", data);
         // Set result based on the backend response
         setResult({
           message: isArmstrongNumber
@@ -64,13 +66,17 @@ const CheckNumber = () => {
     return sum === num;
   };
 
+  const handleNavigate = () => {
+    navigate("/user-details"); // Navigate to the /user-details page
+  };
+
   return (
     <div className="flex flex-col items-center justify-center h-[100vh] bg-gray-100">
       <div className="bg-custom-blue text-white p-8 rounded-lg shadow-md w-2/7 h-[45%] flex flex-col items-center justify-center">
         <div className="flex flex-col justify-between h-full w-full">
           <button
             className="text-white mb-4 focus:outline-none self-start"
-            onClick={() => alert("Back clicked!")}
+            onClick={handleNavigate} // Call handleNavigate on click
           >
             ←
           </button>
