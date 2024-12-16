@@ -8,7 +8,7 @@ const NavBar = () => {
     >
         <a href="/home" className="text-lg text-white font-semibold hover:border-b-2 hover:border-white">HOME</a>
         <a href="/check-armstrong" className="text-lg text-white font-semibold hover:border-b-2 hover:border-white">CHECK</a>
-        <a href="/" className="text-lg font-semibold text-white hover:border-b-2 hover:border-white pb-1">LIST</a>
+        <a href="/armrange" className="text-lg font-semibold text-white hover:border-b-2 hover:border-white pb-1">LIST</a>
         <a href="/user-details" className="text-lg text-white font-semibold hover:border-b-2 hover:border-white">USERS</a>
         <a href="/" className="text-lg font-semibold text-white hover:border-b-2 hover:border-white">LOGOUT</a>
       </div>

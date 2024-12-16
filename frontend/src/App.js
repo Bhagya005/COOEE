@@ -7,6 +7,7 @@ import UserPage from "./components/userPage";
 import Userdetails from "./components/userDetails";
 import PrivateRoute from "./components/PrivateRoute";
 import LandingPage from "./components/landing";
+import ArmstrongChecker from "./components/rangeArm";
 
 const App = () => {
   return (
@@ -15,6 +16,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Login />} /> {/* Default route */}
           <Route path="/check-armstrong" element={<CheckNumber />} /> {/* Default route */}
+          <Route path="/armrange" element={<ArmstrongChecker />} />
           <Route
             path="/home"
             element={
