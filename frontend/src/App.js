@@ -6,6 +6,7 @@ import Login from "./components/login";
 import UserPage from "./components/userPage";
 import Userdetails from "./components/userDetails";
 import PrivateRoute from "./components/PrivateRoute";
+import LandingPage from "./components/landing";
 
 const App = () => {
   return (
@@ -13,11 +14,12 @@ const App = () => {
       <Router>
         <Routes>
           <Route path="/" element={<Login />} /> {/* Default route */}
+          <Route path="/check-armstrong" element={<CheckNumber />} /> {/* Default route */}
           <Route
-            path="/check-armstrong"
+            path="/home"
             element={
               <PrivateRoute>
-                <CheckNumber />
+                <LandingPage />
               </PrivateRoute> // Properly nested PrivateRoute wrapper
             }
           />

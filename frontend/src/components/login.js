@@ -64,7 +64,7 @@ const LoginForm = () => {
         localStorage.setItem("email", data.email);
 
         alert("User successfully logged in!");
-        navigate("/check-armstrong"); // Navigate to the Armstrong check page
+        navigate("/home"); // Navigate to the Armstrong check page
       } else {
         alert(data.error || "Login failed");
       }

@@ -5,89 +5,50 @@ import { useUser } from "../context/UserContext";
 
 const UserDetails = () => {
   const [userDetails, setUserDetails] = useState(null);
+  const [otherUsers, setOtherUsers] = useState([]); // Initialize as an empty array
   const { user } = useUser();
   const navigate = useNavigate(); // Initialize the navigate function
-  const [otherUsers, setOtherUsers] = useState([]);
 
   useEffect(() => {
-    console.log("Full user object:", user);
-
     if (user && user.user_id) {
       console.log(`Attempting to fetch user details for ID: ${user.user_id}`);
-
-      fetch(
-        `http://localhost:8080/getuserdet?user_id=${encodeURIComponent(
-          user.user_id
-        )}`,
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-          },
-        }
-      )
-        .then((response) => {
-          console.log("Response status:", response.status);
-          console.log(
-            "Response headers:",
-            Object.fromEntries(response.headers.entries())
-          );
-
-          // Check content type
-          const contentType = response.headers.get("content-type");
-          console.log("Content-Type:", contentType);
-
-          if (!response.ok) {
-            return response.text().then((text) => {
-              console.error("Error response body:", text);
-              throw new Error(
-                `HTTP error! status: ${response.status}, body: ${text}`
-              );
-            });
-          }
-
-          if (!contentType || !contentType.includes("application/json")) {
-            return response.text().then((text) => {
-              console.error("Non-JSON response:", text);
-              throw new Error("Received non-JSON response");
-            });
-          }
-
-          return response.json();
-        })
+      
+      fetch(`http://localhost:8080/getuserdet?user_id=${encodeURIComponent(user.user_id)}`, {
+        method: "GET",
+        headers: {
+          "Accept": "application/json",
+        },
+      })
+        .then((response) => response.json())
         .then((data) => {
-          console.log("Data fetched from backend:", data);
+          console.log("User Details fetched:", data);
           setUserDetails(data);
         })
-        .catch((error) => {
-          console.error("Detailed error fetching user details:", error);
-        });
+        .catch((error) => console.error("Error fetching user details:", error));
+
+      // Fetch remaining users
+      fetch(`http://localhost:8080/getremainingusers?user_id=${encodeURIComponent(user.user_id)}`, {
+        method: "GET",
+        headers: {
+          "Accept": "application/json",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("Other Users fetched:", data);
+          setOtherUsers(data); // Store the list of other users
+        })
+        .catch((error) => console.error("Error fetching other users:", error));
     } else {
       console.warn("User ID is not available. Cannot fetch details.", user);
     }
-    if (user && user.user_id) {
-      // Fetch remaining users
-      fetch(
-        `http://localhost:8080/getallusers?exclude_user_id=${encodeURIComponent(
-          user.user_id
-        )}`,
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-          },
-        }
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          console.log("Remaining users fetched:", data);
-          setOtherUsers(data);
-        })
-        .catch((error) => {
-          console.error("Error fetching remaining users:", error);
-        });
-    }
   }, [user]);
+
+  // Ensure that `otherUsers` is an array before attempting to use `.map()`
+  if (!Array.isArray(otherUsers)) {
+    console.error("otherUsers is not an array", otherUsers);
+    return <div>Loading...</div>;
+  }
 
   const handleUserClick = (userID) => {
     // Navigate to the dynamic user details page with the user ID
@@ -100,9 +61,7 @@ const UserDetails = () => {
 
   return (
     <div className="min-h-screen bg-custom-blue text-white flex flex-col items-center py-10">
-      <h1 className="text-4xl font-semi-bold p-10 mb-8">
-        Hey {user.name}, Let's meet our users
-      </h1>
+      <h1 className="text-4xl font-semi-bold p-10 mb-8">Hey {user.name}, Let's meet our users</h1>
 
       <div className="flex items-center w-[90%] pb-8 pl-0 border-b-[0.1px] border-white/40">
         <span className="mr-8 pr-10 font-bold text-lg">You</span>
@@ -116,16 +75,21 @@ const UserDetails = () => {
       </div>
 
       <div className="flex flex-wrap justify-start w-full gap-6 pt-10 px-20">
-        {otherUsers.map((userData) => (
-          <UserBox
-            key={userData.user_id}
-            name={userData.name}
-            searches={userData.searches}
-            positives={userData.positives}
-            negatives={userData.negatives}
-            onClick={() => handleUserClick(userData.user_id)}
-          />
-        ))}
+        {/* Render other users */}
+        {otherUsers.length > 0 ? (
+          otherUsers.map((otherUser) => (
+            <UserBox
+              key={otherUser.user_id}
+              name={otherUser.name}
+              searches={otherUser.searches}
+              positives={otherUser.positives}
+              negatives={otherUser.negatives}
+              onClick={() => handleUserClick(otherUser.user_id)}
+            />
+          ))
+        ) : (
+          <p>No other users found.</p>
+        )}
       </div>
     </div>
   );
