@@ -24,7 +24,7 @@ const LandingPage = () => {
         {/* Bottom part with mascot image and text */}
         <div className="flex items-center justify-center p-10 ">
           <div className="text-center w-[30%]">
-            <p className="text-2xl mx-auto text-custom-blue texi-bold pr-10">
+            <p className="text-2xl mx-auto text-custom-blue font-bold pr-10">
               Check if your number is an Armstrong number! Sign up, enter a number, and get the result instantly. Simple, fast, and fun!
             </p>
           </div>

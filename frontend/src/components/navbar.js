@@ -1,17 +1,32 @@
-// components/NavBar.js
-import React from 'react';
+import React from "react";
+import { NavLink, useLocation } from "react-router-dom";
 
 const NavBar = () => {
+  const location = useLocation(); // Hook to get current route
+
+  // Navbar items data
+  const navItems = [
+    { name: "HOME", href: "/home" },
+    { name: "CHECK", href: "/check-armstrong" },
+    { name: "LIST", href: "/armrange" },
+    { name: "USERS", href: "/user-details" },
+    { name: "LOGOUT", href: "/" },
+  ];
+
   return (
-    
-      <div className="flex justify-end space-x-10 p-5 pr-10 pb-7 bg-custom-blue text-3xl opacity-95"
-    >
-        <a href="/home" className="text-lg text-white font-semibold hover:border-b-2 hover:border-white">HOME</a>
-        <a href="/check-armstrong" className="text-lg text-white font-semibold hover:border-b-2 hover:border-white">CHECK</a>
-        <a href="/armrange" className="text-lg font-semibold text-white hover:border-b-2 hover:border-white pb-1">LIST</a>
-        <a href="/user-details" className="text-lg text-white font-semibold hover:border-b-2 hover:border-white">USERS</a>
-        <a href="/" className="text-lg font-semibold text-white hover:border-b-2 hover:border-white">LOGOUT</a>
-      </div>
+    <div className="flex justify-end space-x-10 p-5 pr-10 pb-7 bg-custom-blue text-3xl opacity-95">
+      {navItems.map((item) => (
+        <NavLink
+          key={item.name}
+          to={item.href}
+          className={`text-lg font-semibold text-white pb-1 hover:border-b-2 hover:border-white ${
+            location.pathname === item.href ? "border-b-2 border-white" : ""
+          }`}
+        >
+          {item.name}
+        </NavLink>
+      ))}
+    </div>
   );
 };
 
