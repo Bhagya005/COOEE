@@ -15,47 +15,64 @@ type UserDetailsResponse struct {
 	Negatives int    `json:"negatives"`
 }
 
+// ArmstrongStats holds the values for searches, positives, and negatives
+type ArmstrongStats struct {
+	Searches  int `json:"searches"`
+	Positives int `json:"positives"`
+	Negatives int `json:"negatives"`
+}
+
 // GetUserDetails retrieves the current user details
 func GetUserDetails(w http.ResponseWriter, r *http.Request) {
-	// Get user ID from query parameter
+	log.Println("Received request method:", r.Method)
+	log.Println("Request headers:", r.Header)
+
+	w.Header().Set("Content-Type", "application/json")
+
 	userID := r.URL.Query().Get("user_id")
+	log.Printf("Received user_id: %s", userID)
+
 	if userID == "" {
-		http.Error(w, "Missing user ID", http.StatusBadRequest)
+		log.Println("Missing user ID")
+		http.Error(w, `{"error":"Missing user ID"}`, http.StatusBadRequest)
 		return
 	}
 
-	// Fetch user name from the `users` table
 	var name string
 	err := config.DB.Raw("SELECT name FROM users WHERE user_id = ?", userID).Scan(&name).Error
 	if err != nil {
-		log.Println("Error querying users table:", err)
-		http.Error(w, "User not found", http.StatusNotFound)
+		log.Printf("Error querying users table for user_id %s: %v", userID, err)
+		http.Error(w, `{"error":"User not found"}`, http.StatusNotFound)
 		return
 	}
 
-	// Fetch statistics from the `armstrong` table
-	var searches, positives, negatives int
+	log.Printf("Querying Armstrong table for user_id: %s", userID)
+	var stats ArmstrongStats
 	err = config.DB.Raw(`
-    SELECT COUNT(*) AS searches,
-           SUM(CASE WHEN result = 'positive' THEN 1 ELSE 0 END) AS positives,
-           SUM(CASE WHEN result = 'negative' THEN 1 ELSE 0 END) AS negatives
-    FROM armstrong
-    WHERE user_id = ?`, userID).Scan(&[]interface{}{&searches, &positives, &negatives}).Error
+		SELECT 
+			COALESCE(COUNT(*), 0) AS searches,
+			COALESCE(SUM(CASE WHEN result = 'positive' THEN 1 ELSE 0 END), 0) AS positives,
+			COALESCE(SUM(CASE WHEN result = 'negative' THEN 1 ELSE 0 END), 0) AS negatives
+		FROM armstrong_numbers
+		WHERE user_id = ?`, userID).Scan(&stats).Error
+
 	if err != nil {
-		log.Println("Error querying armstrong table:", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		log.Printf("Error querying armstrong table for user_id %s: %v", userID, err)
+		http.Error(w, `{"error":"Internal server error"}`, http.StatusInternalServerError)
 		return
 	}
 
-	// Create response
+	log.Printf("User Details: Name: %s, Searches: %d, Positives: %d, Negatives: %d", name, stats.Searches, stats.Positives, stats.Negatives)
+
 	response := UserDetailsResponse{
 		Name:      name,
-		Searches:  searches,
-		Positives: positives,
-		Negatives: negatives,
+		Searches:  stats.Searches,
+		Positives: stats.Positives,
+		Negatives: stats.Negatives,
 	}
 
-	// Send JSON response
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		log.Printf("Error encoding response: %v", err)
+		http.Error(w, `{"error":"Internal server error"}`, http.StatusInternalServerError)
+	}
 }

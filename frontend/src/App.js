@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom"; // Im
 import { UserProvider } from "./context/UserContext";
 import CheckNumber from "./components/checkArm";
 import Login from "./components/login";
+import UserPage from "./components/userPage";
 import Userdetails from "./components/userDetails";
 import PrivateRoute from "./components/PrivateRoute";
 
@@ -21,6 +22,7 @@ const App = () => {
             }
           />
           <Route path="/user-details" element={<Userdetails />} />
+          <Route path="/user-details/:user_id" element={<UserPage />} />
         </Routes>
       </Router>
     </UserProvider>
