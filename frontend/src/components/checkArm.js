@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useUser } from "../context/UserContext"; // Access user data from the context
-import { useNavigate } from "react-router-dom"; // Import useNavigate
 import thumbsUp from "../static/thumbsUp.gif";
 import thumbsDown from "../static/thumbsDown.gif";
 import NavBar from "./navbar"; // Import NavBar component
@@ -9,7 +8,7 @@ const CheckNumber = () => {
   const { user } = useUser(); // Access user data from the context
   const [number, setNumber] = useState("");
   const [result, setResult] = useState("");
-  const navigate = useNavigate(); // Initialize useNavigate
+  
 
   const handleCheck = async () => {
     if (!/^\d+$/.test(number)) {
@@ -67,16 +66,14 @@ const CheckNumber = () => {
     return sum === num;
   };
 
-  const handleNavigate = () => {
-    navigate("/user-details"); // Navigate to the /user-details page
-  };
+ 
 
   return (
     <div className="bg-gray-100 min-h-screen flex flex-col"> {/* Ensured full height with min-h-screen */}
       <NavBar /> {/* Fixed NavBar at the top */}
 
       <div className="flex flex-col items-center justify-start flex-1 pt-28"> {/* pt-28 to ensure spacing for NavBar */}
-        <div className="bg-custom-blue text-white p-8 px-0 rounded-lg shadow-md w-[30%] pb-15 h-[40%] flex flex-col items-center justify-center">
+        <div className="bg-custom-blue text-white p-8 px-0 rounded-lg shadow-md w-[30%] pb-15 h-[40%] flex flex-col opacity-90 items-center justify-center">
           {/* Increased height and added flex-grow to parent container */}
           <div className="flex flex-col justify-between h-full w-full p-8 px-0">
             <div className="flex flex-col items-center">
@@ -104,7 +101,7 @@ const CheckNumber = () => {
         {result && (
           <div className="flex items-center pt-5 w-[20%] justify-center space-x-0">
             <img src={result.gif} alt="Result" className="w-[120px] h-[100px]" />
-            <span className="text-sm text-center font-bold text-custom-blue">{result.message}</span>
+            <span className="text-xl text-center font-bold text-custom-blue">{result.message}</span>
           </div>
         )}
       </div>
