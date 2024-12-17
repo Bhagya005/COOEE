@@ -14,19 +14,50 @@ const App = () => {
     <UserProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<Login />} /> {/* Default route */}
-          <Route path="/check-armstrong" element={<CheckNumber />} /> {/* Default route */}
-          <Route path="/armrange" element={<ArmstrongChecker />} />
+          {/* Public route for login */}
+          <Route path="/" element={<Login />} /> 
+
+          {/* Private routes for all other components */}
           <Route
             path="/home"
             element={
               <PrivateRoute>
                 <LandingPage />
-              </PrivateRoute> // Properly nested PrivateRoute wrapper
+              </PrivateRoute>
             }
           />
-          <Route path="/user-details" element={<Userdetails />} />
-          <Route path="/user-details/:user_id" element={<UserPage />} />
+          <Route
+            path="/check-armstrong"
+            element={
+              <PrivateRoute>
+                <CheckNumber />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/armrange"
+            element={
+              <PrivateRoute>
+                <ArmstrongChecker />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/user-details"
+            element={
+              <PrivateRoute>
+                <Userdetails />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/user-details/:user_id"
+            element={
+              <PrivateRoute>
+                <UserPage />
+              </PrivateRoute>
+            }
+          />
         </Routes>
       </Router>
     </UserProvider>

@@ -7,7 +7,6 @@ const UserContext = createContext();
 export const UserProvider = ({ children }) => {
   // Initialize user state from localStorage if available
   const [user, setUser] = useState(() => {
-    // Fetch from localStorage to initialize state
     const storedUser = localStorage.getItem("user_id");
     return storedUser
       ? {
@@ -21,15 +20,13 @@ export const UserProvider = ({ children }) => {
   // Function to update user context
   const setUserDetails = (userDetails) => {
     setUser(userDetails);
-    // Store user details in localStorage for persistence
     localStorage.setItem("user_id", userDetails.user_id);
     localStorage.setItem("name", userDetails.name);
     localStorage.setItem("email", userDetails.email);
   };
 
-  // Reset the UserContext when the Login page is loaded (for example, on logout or before login)
+  // Reset the UserContext when the pathname changes to "/"
   useEffect(() => {
-    // If the user visits the login page, reset UserContext and localStorage
     const resetUserContext = () => {
       setUser({ user_id: null, name: "", email: "" });
       localStorage.removeItem("user_id");
@@ -37,11 +34,11 @@ export const UserProvider = ({ children }) => {
       localStorage.removeItem("email");
     };
 
-    // If the user explicitly navigates to the login page, reset the context
+    // Check if the current path is the login page
     if (window.location.pathname === "/") {
       resetUserContext();
     }
-  }, []); // Only run once when the component mounts
+  }, [window.location.pathname]); // Run whenever the pathname changes
 
   return (
     <UserContext.Provider value={{ user, setUserDetails }}>

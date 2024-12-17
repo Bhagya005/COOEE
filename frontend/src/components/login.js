@@ -9,9 +9,13 @@ const LoginForm = () => {
   const navigate = useNavigate(); // Hook for navigation
 
   useEffect(() => {
-    // Log the current user context when the component loads
-    console.log("UserContext before update:", user);
-  }, []); // Run once when the component mounts
+    // Clear the user context when the login page loads
+    console.log("Resetting UserContext");
+    setUserDetails({ user_id: null, name: "", email: "" });
+    localStorage.removeItem("user_id");
+    localStorage.removeItem("name");
+    localStorage.removeItem("email");
+  }, []); // Runs only when the component mounts
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -42,9 +46,6 @@ const LoginForm = () => {
       console.log("Backend response:", data);
 
       if (response.ok) {
-        // Log the user context before it's updated
-        console.log("UserContext before update:", user);
-
         // Update UserContext and localStorage with the new user_id
         setUserDetails({
           user_id: data.user_id, // Use the unique `user_id`
