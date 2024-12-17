@@ -14,7 +14,7 @@ const NavBar = () => {
   ];
 
   return (
-    <div className="flex justify-end space-x-10 p-5 pr-10 pb-7 bg-custom-blue text-3xl opacity-95">
+    <div className="flex justify-end space-x-10 p-5 pr-10 pb-5 bg-custom-blue text-3xl opacity-95">
       {navItems.map((item) => (
         <NavLink
           key={item.name}
