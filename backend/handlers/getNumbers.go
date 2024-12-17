@@ -42,9 +42,10 @@ func GetUserNumbers(w http.ResponseWriter, r *http.Request) {
     // Parse pagination parameters
     pageStr := r.URL.Query().Get("page")
     pageSizeStr := r.URL.Query().Get("page_size")
+    filter := r.URL.Query().Get("filter") // New filter parameter
 
     // Default values
-    page := 1  // Changed from 2 to 1
+    page := 1
     pageSize := 5
 
     // Convert page and page_size to integers
@@ -65,21 +66,25 @@ func GetUserNumbers(w http.ResponseWriter, r *http.Request) {
     // Prepare response struct
     var response PaginatedNumberDetailsResponse
 
-    // First, get total count of entries for this user
+    // Query for total count
     var totalCount int64
-    countQuery := config.DB.Raw(`
-        SELECT COUNT(*) 
-        FROM armstrong_numbers 
-        WHERE user_id = ?
-    `, userID)
-    countQuery.Scan(&totalCount)
+    countQuery := "SELECT COUNT(*) FROM armstrong_numbers WHERE user_id = ?"
+    countParams := []interface{}{userID}
+
+    // Apply filter if present
+    if filter == "positive" || filter == "negative" {
+        countQuery += " AND result = ?"
+        countParams = append(countParams, filter)
+    }
+
+    config.DB.Raw(countQuery, countParams...).Scan(&totalCount)
 
     // Calculate total pages
     totalPages := (int(totalCount) + pageSize - 1) / pageSize
 
-    // Fetch paginated numbers, results, and timestamps for the user
+    // Query for paginated data
     var numberDetails []NumberDetails
-    err := config.DB.Raw(`
+    dataQuery := `
         SELECT 
             id,
             number,
@@ -87,18 +92,24 @@ func GetUserNumbers(w http.ResponseWriter, r *http.Request) {
             created_at
         FROM armstrong_numbers
         WHERE user_id = ?
-        ORDER BY created_at DESC
-        LIMIT ? OFFSET ?
-    `, userID, pageSize, offset).Scan(&numberDetails).Error
+    `
+    dataParams := []interface{}{userID}
+
+    if filter == "positive" || filter == "negative" {
+        dataQuery += " AND result = ?"
+        dataParams = append(dataParams, filter)
+    }
+
+    dataQuery += " ORDER BY created_at DESC LIMIT ? OFFSET ?"
+    dataParams = append(dataParams, pageSize, offset)
+
+    err := config.DB.Raw(dataQuery, dataParams...).Scan(&numberDetails).Error
 
     if err != nil {
         log.Printf("Error querying armstrong_numbers table for user_id %s: %v", userID, err)
         http.Error(w, `{"error":"Internal server error"}`, http.StatusInternalServerError)
         return
     }
-
-    // Log the number of entries fetched
-    log.Printf("Fetched %d entries for page %d", len(numberDetails), page)
 
     // Populate response
     response = PaginatedNumberDetailsResponse{

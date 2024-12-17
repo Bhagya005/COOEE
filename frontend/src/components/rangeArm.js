@@ -81,13 +81,13 @@ function ArmstrongChecker() {
                 armstrongNumbers.map((num, index) => (
                   <div
                     key={index}
-                    className="bg-custom-blue text-white  flex items-center justify-center rounded-md text-lg p-3 font-bold"
+                    className=" text-custom-blue  flex items-center justify-center rounded-md text-xl p-3 font-bold"
                   >
                     {num}
                   </div>
                 ))
               ) : (
-                <p className="text-custom-blue text-xl">No Armstrong numbers found</p>
+                <p className="text-custom-blue text-xl">No numbers found</p>
               )}
             </div>
           </div>
